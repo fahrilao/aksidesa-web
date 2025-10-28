@@ -1,0 +1,114 @@
+services:
+    # MySQL Database
+    mysql:
+        image: mysql:8.0
+        container_name: aksidesa_mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: aksidesa_db
+            MYSQL_ROOT_PASSWORD: root_password
+            MYSQL_USER: aksidesa_user
+            MYSQL_PASSWORD: aksidesa_password
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+            - ./docker/mysql/init:/docker-entrypoint-initdb.d
+        networks:
+            - aksidesa_network
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10
+
+    # Redis Cache
+    redis:
+        image: redis:7-alpine
+        container_name: aksidesa_redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        networks:
+            - aksidesa_network
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            timeout: 20s
+            retries: 10
+
+    # app Backend API
+    app:
+        image: fahlaosa/aksidesa-backend:latest
+        build:
+            context: .
+            dockerfile: docker/Dockerfile
+        container_name: aksidesa_laravel
+        restart: unless-stopped
+        command: php artisan serve --host=0.0.0.0 --port=8000
+        environment:
+            APP_NAME: "E-AKSIDESA"
+            APP_ENV: local
+            APP_KEY: base64:jdnsgwhGsLgSETB8G5urRKTtrQ4fDYvJ3SI3k/zOrQc=
+            APP_DEBUG: true
+            APP_URL: http://localhost:8000
+
+            DB_CONNECTION: mysql
+            DB_HOST: mysql
+            DB_PORT: 3306
+            DB_DATABASE: aksidesa_db
+            DB_USERNAME: aksidesa_user
+            DB_PASSWORD: aksidesa_password
+
+            CACHE_DRIVER: redis
+            QUEUE_CONNECTION: redis
+            SESSION_DRIVER: redis
+
+            REDIS_HOST: redis
+            REDIS_PASSWORD: null
+            REDIS_PORT: 6379
+        ports:
+            - "8000:8000"
+        volumes:
+            - .:/var/www/html
+            - ./storage/app/public:/var/www/html/public/storage
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        networks:
+            - aksidesa_network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+            timeout: 20s
+            retries: 10
+
+    # phpMyAdmin for Database Management
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: aksidesa_phpmyadmin
+        restart: unless-stopped
+        environment:
+            PMA_HOST: mysql
+            PMA_PORT: 3306
+            PMA_USER: aksidesa_user
+            PMA_PASSWORD: aksidesa_password
+            MYSQL_ROOT_PASSWORD: root_password
+        ports:
+            - "8080:80"
+        depends_on:
+            mysql:
+                condition: service_healthy
+        networks:
+            - aksidesa_network
+
+volumes:
+    mysql_data:
+        driver: local
+    redis_data:
+        driver: local
+
+networks:
+    aksidesa_network:
+        driver: bridge

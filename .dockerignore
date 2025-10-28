@@ -1,0 +1,42 @@
+# Laravel
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+docker-compose.override.yml
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# React
+E-AKSIDESA/node_modules
+E-AKSIDESA/dist
+E-AKSIDESA/.env.local
+E-AKSIDESA/.env.development.local
+E-AKSIDESA/.env.test.local
+E-AKSIDESA/.env.production.local
+
+# Git
+.git
+.gitignore
+README.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml

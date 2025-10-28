@@ -1,0 +1,9 @@
+:root,
+[data-bs-theme="light"],
+[data-bs-theme="dark"] {
+    --bs-primary: #2092ec;
+    --bs-primary-rgb: 32, 146, 236;
+    --bs-primary-bg-subtle: color-mix(in sRGB, var(--bs-paper-bg) 84%, #2092ec);
+    --bs-primary-border-subtle: rgba(32, 146, 236, 0.39);
+    --bs-primary-contrast: #fff;
+}
